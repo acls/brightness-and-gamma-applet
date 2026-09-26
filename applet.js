@@ -942,8 +942,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
 
                 this._needed_updates();
                 if (menuItem) {
-                    menuItem.setOrnament(
-                        PopupMenu.OrnamentType.DOT,
+                    AppletGui.setPresetOrnament(menuItem,
                         this.brightness == preset["brightness"] && this.screen_temp ===  preset["temperature"]
                     );
                 }
@@ -969,8 +968,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
 
                 this._needed_updates();
                 if (menuItem) {
-                    menuItem.setOrnament(
-                        PopupMenu.OrnamentType.DOT,
+                    AppletGui.setPresetOrnament(menuItem,
                         (this.brightness == preset["brightness"] &&
                         this.gamma_red == preset["gamma_red"] &&
                         this.gamma_green == preset["gamma_green"] &&
@@ -1027,8 +1025,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
                         });
                         this.bagaShortcuts.push(nameShortcut);
                     }
-                    menuItem.setOrnament(
-                        PopupMenu.OrnamentType.DOT,
+                    AppletGui.setPresetOrnament(menuItem,
                         this.brightness == preset["brightness"] && this.screen_temp == preset["temperature"]
                     );
                 }
@@ -1047,14 +1044,12 @@ class BrightnessAndGamma extends Applet.IconApplet {
                         });
                         this.bagaShortcuts.push(nameShortcut);
                     }
-                    if (this.brightness == preset["brightness"] &&
+                    AppletGui.setPresetOrnament(menuItem,
+                        this.brightness == preset["brightness"] &&
                         this.gamma_red == preset["gamma_red"] &&
                         this.gamma_green == preset["gamma_green"] &&
-                        this.gamma_blue == preset["gamma_blue"]) {
-                            menuItem.setOrnament(PopupMenu.OrnamentType.DOT, true);
-                    } else {
-                            menuItem.setOrnament(PopupMenu.OrnamentType.DOT, false);
-                    }
+                        this.gamma_blue == preset["gamma_blue"]
+                    );
                 }
             }
         }
