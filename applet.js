@@ -397,6 +397,8 @@ class BrightnessAndGamma extends Applet.IconApplet {
                         ["preset_list", this.on_preset_list_changed],
                         ["preset_list_temp", this.on_preset_list_changed],
                         ["preset_selected_keybind", null],
+                        ["selected_preset", null],
+                        ["selected_preset_temp", null],
                         ["baga_icon", this.on_gui_icon_changed],
                         ["show_shortcuts_in_menu", null],
                         ["last_values_string_temp", null],
@@ -914,23 +916,72 @@ class BrightnessAndGamma extends Applet.IconApplet {
         });
     }
 
-    _up_to_preset(preset, menuItem) {
+    get_preset_list() {
+        return this.useScreenTemp ? this.preset_list_temp : this.preset_list;
+    }
+
+    get_selected_preset_index() {
+        let index = this.useScreenTemp ? this.selected_preset_temp : this.selected_preset;
+        if (typeof index != "number" || index < 0 || index >= this.get_preset_list().length)
+            return -1;
+        return index;
+    }
+
+    set_selected_preset_index(index) {
+        if (this.useScreenTemp)
+            this.selected_preset_temp = index;
+        else
+            this.selected_preset = index;
+    }
+
+    // The sliders, scrolling and the brightness hotkeys all reach the update_*
+    // methods, so whatever the user dials in becomes the selected preset's new
+    // values. Preset ramps, full-screen and the off state assign brightness and
+    // gamma directly and so deliberately miss this, and never rewrite a preset.
+    // Writes are coalesced because dragging a slider emits continuously.
+    _save_values_to_selected_preset() {
+        if (this.get_selected_preset_index() < 0) return;
+        if (this._selected_preset_timeout) clearTimeout(this._selected_preset_timeout);
+        this._selected_preset_timeout = setTimeout(() => {
+            this._selected_preset_timeout = null;
+            this._write_values_to_selected_preset();
+        }, 500);
+    }
+
+    _write_values_to_selected_preset() {
+        let index = this.get_selected_preset_index();
+        if (index < 0) return;
+        let presets = this.get_preset_list();
+        presets[index]["brightness"] = this.brightness;
+        if (this.useScreenTemp) {
+            presets[index]["temperature"] = this.screen_temp;
+            this.preset_list_temp = presets;
+        } else {
+            presets[index]["gamma_red"] = this.gamma_red;
+            presets[index]["gamma_green"] = this.gamma_green;
+            presets[index]["gamma_blue"] = this.gamma_blue;
+            this.preset_list = presets;
+        }
+    }
+
+    _up_to_preset(preset, index) {
         if (!this.is_running) return;
+        this.set_selected_preset_index(index);
         let _interval;
         if (this.useScreenTemp) {
-            this.target_brightness = Math.max(preset["brightness"], this.minimum_brightness);
-            this.target_temperature = Math.max(this.valid_temp(preset["temperature"]), this.minimum_temp);
+            this.target_brightness = Math.min(Math.max(preset["brightness"], this.minimum_brightness), this.maximum_brightness);
+            this.target_temperature = Math.min(Math.max(this.valid_temp(preset["temperature"]), this.minimum_temp), this.maximum_temp);
             _interval = setInterval( () => {
                 if (this.target_brightness === this.brightness &&
                     this.target_temperature ===  this.screen_temp
                 ) {
                     clearInterval(_interval);
+                    this.save_last_values();
                 }
 
                 this.brightness += Math.sign(this.target_brightness - this.brightness);
 
                 let diff_temp = this.target_temperature - this.screen_temp;
-                //~ global.log("diff_temp: " + diff_temp);
                 if (Math.abs(diff_temp) < 10)
                     this.screen_temp += Math.sign(diff_temp);
                 else if (Math.abs(diff_temp) < 100)
@@ -941,17 +992,12 @@ class BrightnessAndGamma extends Applet.IconApplet {
                     this.screen_temp += 1000 * Math.sign(diff_temp);
 
                 this._needed_updates();
-                if (menuItem) {
-                    AppletGui.setPresetOrnament(menuItem,
-                        this.brightness == preset["brightness"] && this.screen_temp ===  preset["temperature"]
-                    );
-                }
             }, this.smooth_duration);
         } else {
-            this.target_brightness = Math.max(preset["brightness"], this.minimum_brightness);
-            this.target_gamma_red = Math.max(preset["gamma_red"], this.minimum_gamma);
-            this.target_gamma_green = Math.max(preset["gamma_green"], this.minimum_gamma);
-            this.target_gamma_blue = Math.max(preset["gamma_blue"], this.minimum_gamma);
+            this.target_brightness = Math.min(Math.max(preset["brightness"], this.minimum_brightness), this.maximum_brightness);
+            this.target_gamma_red = Math.min(Math.max(preset["gamma_red"], this.minimum_gamma), this.maximum_gamma);
+            this.target_gamma_green = Math.min(Math.max(preset["gamma_green"], this.minimum_gamma), this.maximum_gamma);
+            this.target_gamma_blue = Math.min(Math.max(preset["gamma_blue"], this.minimum_gamma), this.maximum_gamma);
             _interval = setInterval( () => {
                 if (this.target_brightness === this.brightness &&
                     this.target_gamma_red ===  this.gamma_red &&
@@ -959,6 +1005,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
                     this.target_gamma_blue === this.gamma_blue
                 ) {
                     clearInterval(_interval);
+                    this.save_last_values();
                 }
 
                 this.brightness += Math.sign(this.target_brightness - this.brightness);
@@ -967,14 +1014,6 @@ class BrightnessAndGamma extends Applet.IconApplet {
                 this.gamma_blue += Math.sign(this.target_gamma_blue - this.gamma_blue);
 
                 this._needed_updates();
-                if (menuItem) {
-                    AppletGui.setPresetOrnament(menuItem,
-                        (this.brightness == preset["brightness"] &&
-                        this.gamma_red == preset["gamma_red"] &&
-                        this.gamma_green == preset["gamma_green"] &&
-                        this.gamma_blue == preset["gamma_blue"])
-                    );
-                }
             }, this.smooth_duration);
         }
     }
@@ -1010,50 +1049,23 @@ class BrightnessAndGamma extends Applet.IconApplet {
             children[this.menu_item_presets_position].destroy();
         }
         this.menu_item_presets = new PopupMenu.PopupSubMenuMenuItem(_("Presets"));
-        var counterShortcut = -1;
-        if (this.useScreenTemp) {
-            for (let preset of this.preset_list_temp) {
-                counterShortcut++;
-                if (preset.show) {
-                    let menuItem = this.menu_item_presets.menu.addAction(preset["name"], () => {
-                        this._up_to_preset(preset, menuItem);
-                    });
-                    if (preset["shortcut"] != null && preset["shortcut"].length > 2) {
-                        let nameShortcut = "baga-" + this.instance_id + "-" + counterShortcut;
-                        Main.keybindingManager.addHotKey(nameShortcut, preset["shortcut"], () => {
-                            this._up_to_preset(preset, menuItem);
-                        });
-                        this.bagaShortcuts.push(nameShortcut);
-                    }
-                    AppletGui.setPresetOrnament(menuItem,
-                        this.brightness == preset["brightness"] && this.screen_temp == preset["temperature"]
-                    );
-                }
+        let presets = this.get_preset_list();
+        let selected = this.get_selected_preset_index();
+        for (let index = 0; index < presets.length; index++) {
+            let preset = presets[index];
+            if (!preset.show) continue;
+            let menuItem = this.menu_item_presets.menu.addAction(preset["name"], () => {
+                this._up_to_preset(preset, index);
+            });
+            if (preset["shortcut"] != null && preset["shortcut"].length > 2) {
+                let nameShortcut = "baga-" + this.instance_id + "-" + index;
+                Main.keybindingManager.addHotKey(nameShortcut, preset["shortcut"], () => {
+                    this._up_to_preset(preset, index);
+                });
+                this.bagaShortcuts.push(nameShortcut);
             }
-        } else {
-            for (let preset of this.preset_list) {
-                counterShortcut++;
-                if (preset.show) {
-                    let menuItem = this.menu_item_presets.menu.addAction(preset["name"], () => {
-                        this._up_to_preset(preset, menuItem);
-                    });
-                    if (preset["shortcut"] != null && preset["shortcut"].length > 2) {
-                        let nameShortcut = "baga-" + this.instance_id + "-" + counterShortcut;
-                        Main.keybindingManager.addHotKey(nameShortcut, preset["shortcut"], () => {
-                            this._up_to_preset(preset, menuItem);
-                        });
-                        this.bagaShortcuts.push(nameShortcut);
-                    }
-                    AppletGui.setPresetOrnament(menuItem,
-                        this.brightness == preset["brightness"] &&
-                        this.gamma_red == preset["gamma_red"] &&
-                        this.gamma_green == preset["gamma_green"] &&
-                        this.gamma_blue == preset["gamma_blue"]
-                    );
-                }
-            }
+            AppletGui.setPresetOrnament(menuItem, index === selected);
         }
-
         this._applet_context_menu.addMenuItem(this.menu_item_presets, this.menu_item_presets_position);
     }
 
@@ -1257,6 +1269,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         this.screen_temp = value;
         this.update_xsct();
         this.update_tooltip();
+        this._save_values_to_selected_preset();
         this._init_menu_item_presets();
     }
 
@@ -1267,6 +1280,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         else
             this.update_xrandr();
         this.update_tooltip();
+        this._save_values_to_selected_preset();
         this._init_menu_item_presets();
     }
 
@@ -1274,6 +1288,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         this.gamma_red = value;
         this.update_xrandr();
         this.update_tooltip();
+        this._save_values_to_selected_preset();
         this._init_menu_item_presets();
     }
 
@@ -1281,6 +1296,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         this.gamma_green = value;
         this.update_xrandr();
         this.update_tooltip();
+        this._save_values_to_selected_preset();
         this._init_menu_item_presets();
     }
 
@@ -1288,6 +1304,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         this.gamma_blue = value;
         this.update_xrandr();
         this.update_tooltip();
+        this._save_values_to_selected_preset();
         this._init_menu_item_presets();
     }
 
@@ -1503,6 +1520,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         if (this.useScreenTemp) {
             for (let preset of this.preset_list_temp) {
                 if (preset.show && preset.start_at_sunrise) {
+                    this.set_selected_preset_index(this.get_preset_list().indexOf(preset));
                     this.target_brightness = preset.brightness;
                     this.target_temperature = this.valid_temp(preset.temperature);
 
@@ -1534,6 +1552,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         } else {
             for (let preset of this.preset_list) {
                 if (preset.show && preset.start_at_sunrise) {
+                    this.set_selected_preset_index(this.get_preset_list().indexOf(preset));
                     this.target_brightness = preset.brightness;
                     this.target_gamma_blue = preset.gamma_blue;
                     this.target_gamma_green = preset.gamma_green;
@@ -1567,6 +1586,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         if (this.useScreenTemp) {
             for (let preset of this.preset_list_temp) {
                 if (preset.show && preset.start_at_sunset) {
+                    this.set_selected_preset_index(this.get_preset_list().indexOf(preset));
                     this.target_brightness = preset.brightness;
                     this.target_temperature = this.valid_temp(preset.temperature);
 
@@ -1598,6 +1618,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         } else {
             for (let preset of this.preset_list) {
                 if (preset.show && preset.start_at_sunset) {
+                    this.set_selected_preset_index(this.get_preset_list().indexOf(preset));
                     this.target_brightness = preset.brightness;
                     this.target_gamma_blue = preset.gamma_blue;
                     this.target_gamma_green = preset.gamma_green;

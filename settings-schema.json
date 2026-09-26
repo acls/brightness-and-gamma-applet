@@ -1,16 +1,26 @@
 {
-    "BGAlayout" : {
+    "BGAlayout": {
         "type": "layout",
-        "pages": ["page_general", "page_presets"],
+        "pages": [
+            "page_general",
+            "page_presets"
+        ],
         "page_general": {
             "type": "page",
-            "title" : "General",
-            "sections" : ["section_config", "section_values", "section_geoip", "section_gui"]
+            "title": "General",
+            "sections": [
+                "section_config",
+                "section_values",
+                "section_geoip",
+                "section_gui"
+            ]
         },
         "page_presets": {
             "type": "page",
-            "title" : "Presets",
-            "sections" : ["section_presets"]
+            "title": "Presets",
+            "sections": [
+                "section_presets"
+            ]
         },
         "section_config": {
             "type": "section",
@@ -81,15 +91,15 @@
             ]
         }
     },
-    "disable_nightmode" : {
-        "type" : "switch",
-        "default" : false,
+    "disable_nightmode": {
+        "type": "switch",
+        "default": false,
         "description": "Disable Night Mode",
         "tooltip": "Disable Cinnamon Night Mode while this applet is running.\nThis prevents the screen from flickering.\nThe adjustment time can be up to twice the number of seconds indicated below."
     },
-    "apply_startup" : {
-        "type" : "switch",
-        "default" : true,
+    "apply_startup": {
+        "type": "switch",
+        "default": true,
         "description": "Apply at startup",
         "tooltip": "Apply values at applet startup"
     },
@@ -101,41 +111,41 @@
         "step": 1,
         "units": "seconds",
         "description": "Apply every",
-        "tooltip" : "How often to apply values. 0 means that values are not applied periodically."
+        "tooltip": "How often to apply values. 0 means that values are not applied periodically."
     },
-    "apply_asynchronously" : {
-        "type" : "generic",
-        "default" : true,
+    "apply_asynchronously": {
+        "type": "generic",
+        "default": true,
         "description": "Apply asynchronously",
         "tooltip": "Apply values in a background process"
     },
-    "smooth_duration-label" : {
+    "smooth_duration-label": {
         "type": "label",
         "description": "The changes are made step by step.\nHere you define the duration (in milliseconds) of each step in which the values are changed by one unit, if necessary.\n0 means instantaneous changes.\nRecommended value: between 200 and 300."
     },
-    "smooth_duration" : {
-        "type" : "scale",
-        "default" : 200,
+    "smooth_duration": {
+        "type": "scale",
+        "default": 200,
         "min": 0,
         "max": 1000,
         "step": 50,
         "show-value": true,
         "description": "Step duration (ms)"
     },
-    "all100OnFullscreen" : {
-        "type" : "switch",
-        "default" : false,
+    "all100OnFullscreen": {
+        "type": "switch",
+        "default": false,
         "description": "Set all to 100% in full-screen mode",
         "tooltip": "When an application switches to full-screen mode, all values are set to 100%. Useful for games and videos."
     },
-    "apply_changing_monitors" : {
-        "type" : "switch",
-        "default" : false,
+    "apply_changing_monitors": {
+        "type": "switch",
+        "default": false,
         "description": "Apply when the number of monitors changes"
     },
-    "update_scroll" : {
-        "type" : "switch",
-        "default" : true,
+    "update_scroll": {
+        "type": "switch",
+        "default": true,
         "description": "Adjust brightness scroll",
         "tooltip": "Allows to adjust a brightness value on a mouse scroll"
     },
@@ -147,7 +157,7 @@
         "step": 1,
         "units": "%",
         "description": "Scroll step",
-        "tooltip" : "A percentage of a brightness value to adjust on a mouse scroll"
+        "tooltip": "A percentage of a brightness value to adjust on a mouse scroll"
     },
     "brightness_up_shortcut": {
         "type": "keybinding",
@@ -174,7 +184,6 @@
         "description": "Way to set this applet off",
         "dependency": "toggle_on_off_shortcut!=::"
     },
-
     "gamma_or_temp": {
         "type": "combobox",
         "default": "gamma",
@@ -185,7 +194,6 @@
         "description": "Setting Method",
         "dependency": "xsct_is_present"
     },
-
     "minimum_brightness": {
         "type": "spinbutton",
         "default": 30,
@@ -258,32 +266,30 @@
         "step": 1,
         "units": "seconds",
         "description": "Save every",
-        "tooltip" : "How often to save last used values"
+        "tooltip": "How often to save last used values"
     },
-
-    "options_type" : {
+    "options_type": {
         "type": "combobox",
-        "default" : 0,
-        "description" : "Show",
-        "options" : {
-            "All" : 0,
-            "Brightness" : 1,
-            "Gamma / Temperature" : 2
+        "default": 0,
+        "description": "Show",
+        "options": {
+            "All": 0,
+            "Brightness": 1,
+            "Gamma / Temperature": 2
         },
-        "tooltip" : "Values shown in user interface"
+        "tooltip": "Values shown in user interface"
     },
-    "baga_icon" : {
-        "type" : "combobox",
-        "default" : "sun",
+    "baga_icon": {
+        "type": "combobox",
+        "default": "sun",
         "options": {
             "Only sun": "sun",
             "Screen with sun": "baga",
             "Symbolic": "yaru"
         },
-        "description" : "Icon",
+        "description": "Icon",
         "tooltip": "An icon displayed in a panel"
     },
-
     "preset_label": {
         "type": "label",
         "description": "You can define or modify presets below, which can then be accessed via the applet's context menu.\nOnly the first Start at Sunrise and Start at Sunset checked boxes are taken into account."
@@ -292,16 +298,69 @@
         "type": "list",
         "description": "Your presets",
         "dependency": "gamma_or_temp=gamma",
-        "columns" : [
-            {"id": "name", "title": "Name", "type": "string", "expand-width": true},
-            {"id": "show", "title": "Show\nin menu", "type": "boolean", "align": 0.5},
-            {"id": "brightness", "title": "Brightness", "type": "integer", "align": 0.5, "min": 0, "max": 200},
-            {"id": "gamma_red", "title": "Gamma\nRed", "type": "integer", "align": 0.5, "min": 0, "max": 200},
-            {"id": "gamma_green", "title": "Gamma\nGreen", "type": "integer", "align": 0.5, "min": 0, "max": 200},
-            {"id": "gamma_blue", "title": "Gamma\nBlue", "type": "integer", "align": 0.5, "min": 0, "max": 200},
-            {"id": "start_at_sunrise", "title": "Start at\nSunrise", "type": "boolean", "align": 0.5},
-            {"id": "start_at_sunset", "title": "Start at\nSunset", "type": "boolean", "align": 0.5},
-            {"id": "shortcut", "title": "Hotkey", "type": "string", "default": "::"}
+        "columns": [
+            {
+                "id": "name",
+                "title": "Name",
+                "type": "string",
+                "expand-width": true
+            },
+            {
+                "id": "show",
+                "title": "Show\nin menu",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "brightness",
+                "title": "Brightness",
+                "type": "integer",
+                "align": 0.5,
+                "min": 0,
+                "max": 200
+            },
+            {
+                "id": "gamma_red",
+                "title": "Gamma\nRed",
+                "type": "integer",
+                "align": 0.5,
+                "min": 0,
+                "max": 200
+            },
+            {
+                "id": "gamma_green",
+                "title": "Gamma\nGreen",
+                "type": "integer",
+                "align": 0.5,
+                "min": 0,
+                "max": 200
+            },
+            {
+                "id": "gamma_blue",
+                "title": "Gamma\nBlue",
+                "type": "integer",
+                "align": 0.5,
+                "min": 0,
+                "max": 200
+            },
+            {
+                "id": "start_at_sunrise",
+                "title": "Start at\nSunrise",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "start_at_sunset",
+                "title": "Start at\nSunset",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "shortcut",
+                "title": "Hotkey",
+                "type": "string",
+                "default": "::"
+            }
         ],
         "default": [
             {
@@ -340,14 +399,55 @@
         "type": "list",
         "description": "Your presets",
         "dependency": "gamma_or_temp=temp",
-        "columns" : [
-            {"id": "name", "title": "Name", "type": "string", "expand-width": true},
-            {"id": "show", "title": "Show\nin menu", "type": "boolean", "align": 0.5},
-            {"id": "brightness", "title": "Brightness", "type": "integer", "align": 0.5, "min": 0, "max": 100, "default": 100},
-            {"id": "temperature", "title": "Temperature", "type": "integer", "align": 0.5, "min": 700, "max": 20000, "default": 6500},
-            {"id": "start_at_sunrise", "title": "Start at\nSunrise", "type": "boolean", "align": 0.5},
-            {"id": "start_at_sunset", "title": "Start at\nSunset", "type": "boolean", "align": 0.5},
-            {"id": "shortcut", "title": "Hotkey", "type": "string", "default": "::"}
+        "columns": [
+            {
+                "id": "name",
+                "title": "Name",
+                "type": "string",
+                "expand-width": true
+            },
+            {
+                "id": "show",
+                "title": "Show\nin menu",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "brightness",
+                "title": "Brightness",
+                "type": "integer",
+                "align": 0.5,
+                "min": 0,
+                "max": 100,
+                "default": 100
+            },
+            {
+                "id": "temperature",
+                "title": "Temperature",
+                "type": "integer",
+                "align": 0.5,
+                "min": 700,
+                "max": 20000,
+                "default": 6500
+            },
+            {
+                "id": "start_at_sunrise",
+                "title": "Start at\nSunrise",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "start_at_sunset",
+                "title": "Start at\nSunset",
+                "type": "boolean",
+                "align": 0.5
+            },
+            {
+                "id": "shortcut",
+                "title": "Hotkey",
+                "type": "string",
+                "default": "::"
+            }
         ],
         "default": [
             {
@@ -376,93 +476,86 @@
             }
         ]
     },
-
     "show_shortcuts_in_menu": {
         "type": "switch",
         "default": false,
         "description": "Show shortcuts in the menu"
     },
-
     "preset_selected_keybind": {
         "type": "keybinding",
         "default": "::",
         "description": "Choose a shortcut to copy",
         "tooltip": "Helps you select a keyboard shortcut to use in any of the items listed above.\nOnce selected, click on the button below, then edit the item to paste (Ctrl+V) this shortcut."
     },
-
+    "selected_preset": {
+        "type": "generic",
+        "default": -1
+    },
+    "selected_preset_temp": {
+        "type": "generic",
+        "default": -1
+    },
     "preset_copy_keybind": {
         "type": "button",
         "description": "Copy this shortcut to the clipboard",
         "callback": "on_preset_copy_shortcut"
     },
-
     "preset_sunrise_sunset_button": {
         "type": "button",
         "description": "Set Sunrise and Sunset times",
         "callback": "on_preset_sunrise_sunset_button_clicked"
     },
-
     "preset_reload": {
         "type": "button",
         "description": "Apply all changes",
         "callback": "on_preset_reload_button_clicked"
     },
-
     "values_reload": {
         "type": "button",
         "description": "Apply the selected method",
         "callback": "on_values_reload_button_clicked",
         "dependency": "xsct_is_present"
     },
-
     "use_geoip_values": {
         "type": "switch",
         "default": false,
         "description": "Use your own values below"
     },
-
     "geolat": {
         "type": "entry",
         "default": "91.0",
         "description": "Latitude",
         "tooltip": "The default value is an invalid value to ensure it is always updated at startup.\nIf the default value is valid, it means that this value has been calculated."
     },
-
     "geolon": {
         "type": "entry",
         "default": "181.0",
         "description": "Longitude",
         "tooltip": "The default value is an invalid value to ensure it is always updated at startup.\nIf the default value is valid, it means that this value has been calculated."
     },
-
     "geoip_button": {
         "type": "button",
         "description": "Change these values by using geolocation by ip",
         "callback": "on_geoip_button_clicked"
     },
-
-    "last_values_string_temp" : {
+    "last_values_string_temp": {
         "type": "generic",
-        "default" : "Screen 0,0,100,6500"
+        "default": "Screen 0,0,100,6500"
     },
-
-    "last_values_string" : {
+    "last_values_string": {
         "type": "generic",
-        "default" : "Screen 0,0,100,100,100,100"
+        "default": "Screen 0,0,100,100,100,100"
     },
-
-    "numberOfMonitors" : {
+    "numberOfMonitors": {
         "type": "generic",
-        "default" : 1
+        "default": 1
     },
-
-    "xsct_is_present" : {
+    "xsct_is_present": {
         "type": "generic",
-        "default" : false
+        "default": false
     },
-
     "screen_temp": {
         "type": "generic",
-        "default" : 6500
+        "default": 6500
     }
 }
