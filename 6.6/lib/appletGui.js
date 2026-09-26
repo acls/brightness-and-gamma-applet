@@ -244,7 +244,7 @@ class MenuSliders {
                     }
                     let menuItem = this.section_choices.addAction(preset["name"] + shortcut, () => {
                         this.applet.target_brightness = Math.min(Math.max(preset["brightness"], this.applet.minimum_brightness), this.applet.maximum_brightness);
-                        this.applet.target_temperature = Math.min(Math.max(preset["temperature"], this.applet.minimum_temp), this.applet.maximum_temp);
+                        this.applet.target_temperature = Math.min(Math.max(this.applet.valid_temp(preset["temperature"]), this.applet.minimum_temp), this.applet.maximum_temp);
                         let _interval = setInterval( () => {
                             if (this.applet.target_brightness === this.applet.brightness &&
                                 this.applet.target_temperature ===  this.applet.screen_temp
@@ -384,7 +384,7 @@ class MenuSliders {
         let divisor = max_value - min_value;
         let mapped_value = value - offset;
         let value_zero_one_range = mapped_value / divisor;
-        return value_zero_one_range;
+        return Number.isFinite(value_zero_one_range) ? value_zero_one_range : 1;
     }
 
     get_range_value(min_value, max_value, value) {

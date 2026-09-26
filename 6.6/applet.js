@@ -838,6 +838,12 @@ class BrightnessAndGamma extends Applet.IconApplet {
 
     _init_values() {
         this.load_last_values();
+        this.screen_temp = this.valid_temp(this.screen_temp);
+    }
+
+    valid_temp(value, fallback=6500) {
+        value = Number(value);
+        return Number.isFinite(value) ? value : fallback;
     }
 
     load_last_values() {
@@ -849,7 +855,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
                     let output_indexes = row.output_indexes_string.split(this.output_indexes_separator);
                     this.output_indexes = output_indexes.map(function(output_index) { return parseInt(output_index); });
                     this.brightness = row.brightness;
-                    this.screen_temp = row.temperature;
+                    this.screen_temp = this.valid_temp(row.temperature);
                 }
             } else {
                 if(this.last_values_string.length > 0) {
@@ -913,7 +919,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
         let _interval;
         if (this.useScreenTemp) {
             this.target_brightness = Math.max(preset["brightness"], this.minimum_brightness);
-            this.target_temperature = Math.max(preset["temperature"], this.minimum_temp);
+            this.target_temperature = Math.max(this.valid_temp(preset["temperature"]), this.minimum_temp);
             _interval = setInterval( () => {
                 if (this.target_brightness === this.brightness &&
                     this.target_temperature ===  this.screen_temp
@@ -1503,7 +1509,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
             for (let preset of this.preset_list_temp) {
                 if (preset.show && preset.start_at_sunrise) {
                     this.target_brightness = preset.brightness;
-                    this.target_temperature = preset.temperature;
+                    this.target_temperature = this.valid_temp(preset.temperature);
 
                     _interval = setInterval( () => {
                         if (this.target_brightness === this.brightness &&
@@ -1567,7 +1573,7 @@ class BrightnessAndGamma extends Applet.IconApplet {
             for (let preset of this.preset_list_temp) {
                 if (preset.show && preset.start_at_sunset) {
                     this.target_brightness = preset.brightness;
-                    this.target_temperature = preset.temperature;
+                    this.target_temperature = this.valid_temp(preset.temperature);
 
                     _interval = setInterval( () => {
                         if (this.target_brightness === this.brightness &&
